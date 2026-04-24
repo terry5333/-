@@ -1,8 +1,6 @@
-```react
 import React, { useState, useEffect, useMemo } from 'react';
 import { Clock, Users, Settings, Check, X, Calendar, AlertCircle, Sparkles } from 'lucide-react';
 
-// --- 設定檔與靜態資料 ---
 const DAY1_DATE = '2026-05-05';
 const DAY2_DATE = '2026-05-06';
 
@@ -50,8 +48,7 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
   
-  // 測試模式時間設定 (模擬到 Day 1 的 13:40，看畫線效果)
-  const testTimeBase = useMemo(() => new Date(`${DAY1_DATE}T13:40:00`), []);
+  const testTimeBase = useMemo(() => new Date(DAY1_DATE + "T13:40:00"), []);
 
   const [students, setStudents] = useState(() => {
     const initData = [];
@@ -61,20 +58,17 @@ export default function App() {
     return initData;
   });
 
-  // 時鐘更新
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 判斷今天是否為考試當天
   const isExamDay = useMemo(() => {
     const tzDateStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     return tzDateStr === DAY1_DATE || tzDateStr === DAY2_DATE;
   }, [now]);
 
-  // 如果到了考試當天，強制關閉測試模式
   useEffect(() => {
     if (isExamDay) {
       setIsTestMode(false);
@@ -85,15 +79,14 @@ export default function App() {
     return isTestMode ? testTimeBase : now;
   }, [now, isTestMode, testTimeBase]);
 
-  // 日程表與狀態計算
   const { currentDayDate, isDay2, activeSchedule } = useMemo(() => {
     const tzDateStr = new Date(currentTime.getTime() - (currentTime.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     const dayDate = (tzDateStr >= DAY2_DATE) ? DAY2_DATE : DAY1_DATE;
     
     const scheduleWithTime = SCHEDULE_DATA[dayDate].map(subject => {
       const pInfo = PERIOD_TIMES.find(p => p.id === subject.period);
-      const startDateTime = new Date(`${dayDate}T${pInfo.start}`);
-      const endDateTime = new Date(`${dayDate}T${pInfo.end}`);
+      const startDateTime = new Date(dayDate + "T" + pInfo.start);
+      const endDateTime = new Date(dayDate + "T" + pInfo.end);
       
       return {
         ...subject,
@@ -142,36 +135,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FAF8F4] text-[#4A3F30] p-4 sm:p-8 lg:p-10 flex flex-col font-sans relative overflow-hidden">
       
-      {/* 注入全局樣式與動畫 */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Instrument+Sans:ital,wght@0,400..600;1,400..600&display=swap');
-        .font-fraunces { font-family: 'Fraunces', serif; }
-        .font-instrument { font-family: 'Instrument Sans', sans-serif; }
-        
-        .card-surface {
-          background: rgba(255, 253, 249, 0.85);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(237, 232, 224, 0.8);
-          border-radius: 20px;
-          box-shadow: 0 8px 32px rgba(26, 18, 9, 0.03), inset 0 1px 0 rgba(255,255,255,1);
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .card-surface:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 16px 48px -12px rgba(26, 18, 9, 0.08), inset 0 1px 0 rgba(255,255,255,1);
-        }
-        
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-up { opacity: 0; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #EDE8E0; border-radius: 4px; }
-      `}} />
-
       <div className="max-w-[1500px] mx-auto w-full flex-1 flex flex-col">
         
-        {/* 頂部標題與控制項 */}
         <header className="mb-8 flex justify-between items-end animate-fade-up z-10" style={{ animationDelay: '50ms' }}>
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -184,7 +149,6 @@ export default function App() {
             </h1>
           </div>
           
-          {/* 測試模式按鈕 - 考試當天會自動隱藏 */}
           {!isExamDay && (
             <label className="font-instrument flex items-center space-x-2 text-xs text-[#8C7D6B] cursor-pointer bg-white px-4 py-2 rounded-full border border-[#EDE8E0] shadow-sm hover:border-[#D4654A] transition-all group">
               <input 
@@ -198,13 +162,10 @@ export default function App() {
           )}
         </header>
 
-        {/* 核心雙欄佈局 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 z-10">
           
-          {/* 左欄：時間與考程 (7 col) */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             
-            {/* 時間儀表板 */}
             <div className="card-surface overflow-hidden relative animate-fade-up p-8" style={{ animationDelay: '150ms' }}>
               <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full blur-[60px] opacity-40 mix-blend-multiply pointer-events-none" style={{ backgroundColor: PALETTES.saffron.mid }}></div>
               <div className="absolute -bottom-20 -left-10 w-72 h-72 rounded-full blur-[70px] opacity-20 pointer-events-none" style={{ backgroundColor: PALETTES.saffron.full }}></div>
@@ -233,7 +194,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 考程 To-Do 列表 */}
             <div className="card-surface flex-1 flex flex-col animate-fade-up min-h-[350px]" style={{ animationDelay: '200ms' }}>
               <div className="px-8 py-6 border-b border-[#EDE8E0] flex justify-between items-center bg-gradient-to-r from-transparent to-[#FDF0EC]/30">
                 <h2 className="font-fraunces text-2xl text-[#1A1209] flex items-center gap-2.5">
@@ -249,22 +209,22 @@ export default function App() {
                 {activeSchedule.map((s) => (
                   <div 
                     key={s.period} 
-                    className={`flex items-center p-4 mx-2 my-2 rounded-[16px] transition-all duration-500 ${
-                      s.isFinished ? 'opacity-40 grayscale bg-transparent hover:bg-black/5' : 
-                      s.isActive ? 'bg-gradient-to-r from-[#EDF1FB] to-white border border-[#B3C3EE]/50 shadow-[0_4px_12px_rgba(58,95,196,0.05)] transform scale-[1.01]' : 
-                      'hover:bg-[#FAF8F4] border border-transparent'
-                    }`}
+                    className={"flex items-center p-4 mx-2 my-2 rounded-[16px] transition-all duration-500 " + (
+                      s.isFinished ? "opacity-40 grayscale bg-transparent hover:bg-black/5" : 
+                      s.isActive ? "bg-gradient-to-r from-[#EDF1FB] to-white border border-[#B3C3EE]/50 shadow-[0_4px_12px_rgba(58,95,196,0.05)] transform scale-[1.01]" : 
+                      "hover:bg-[#FAF8F4] border border-transparent"
+                    )}
                   >
-                    <div className={`w-16 text-center font-instrument text-[13px] font-bold tracking-wide ${s.isActive ? 'text-[#3A5FC4]' : 'text-[#8C7D6B]'}`}>
+                    <div className={"w-16 text-center font-instrument text-[13px] font-bold tracking-wide " + (s.isActive ? "text-[#3A5FC4]" : "text-[#8C7D6B]")}>
                       第 {s.period} 節
                     </div>
-                    <div className={`w-36 text-center font-instrument text-sm ${s.isFinished ? 'line-through text-[#8C7D6B]' : 'text-[#4A3F30] font-medium'}`}>
+                    <div className={"w-36 text-center font-instrument text-sm " + (s.isFinished ? "line-through text-[#8C7D6B]" : "text-[#4A3F30] font-medium")}>
                       {s.startTime} - {s.endTime}
                     </div>
-                    <div className={`flex-grow font-fraunces text-xl pl-4 ${
-                      s.isFinished ? 'line-through text-[#8C7D6B]' : 
-                      s.isActive ? 'text-[#3A5FC4] font-medium' : 'text-[#1A1209]'
-                    }`}>
+                    <div className={"flex-grow font-fraunces text-xl pl-4 " + (
+                      s.isFinished ? "line-through text-[#8C7D6B]" : 
+                      s.isActive ? "text-[#3A5FC4] font-medium" : "text-[#1A1209]"
+                    )}>
                       {s.name}
                     </div>
                     <div className="w-12 flex justify-end">
@@ -282,7 +242,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* 右欄：出缺席管理 (5 col) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="card-surface p-8 animate-fade-up relative overflow-hidden flex flex-col h-full" style={{ animationDelay: '250ms' }}>
               <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[50px] opacity-30 pointer-events-none" style={{ backgroundColor: PALETTES.sage.mid }}></div>
@@ -301,19 +260,17 @@ export default function App() {
                 </button>
               </div>
 
-              {/* 統計方塊 */}
               <div className="grid grid-cols-2 gap-5 mb-8 relative z-10">
                 <div className="bg-gradient-to-br from-[#EDF5F1] to-white rounded-[20px] p-6 border border-[#B3D8C6]/60 text-center shadow-sm">
                   <span className="font-instrument text-[11px] font-bold tracking-widest uppercase text-[#4A8B6F] block mb-2">應到人數</span>
                   <span className="font-fraunces text-5xl text-[#1A1209] block">{attendanceSummary.expected}</span>
                 </div>
-                <div className={`rounded-[20px] p-6 border text-center transition-all duration-300 shadow-sm ${attendanceSummary.absent > 0 ? 'bg-gradient-to-br from-[#FDF0EC] to-white border-[#F5C4B5]' : 'bg-white border-[#EDE8E0]'}`}>
-                  <span className={`font-instrument text-[11px] font-bold tracking-widest uppercase block mb-2 ${attendanceSummary.absent > 0 ? 'text-[#D4654A]' : 'text-[#8C7D6B]'}`}>未到人數</span>
-                  <span className={`font-fraunces text-5xl block ${attendanceSummary.absent > 0 ? 'text-[#D4654A]' : 'text-[#1A1209]'}`}>{attendanceSummary.absent}</span>
+                <div className={"rounded-[20px] p-6 border text-center transition-all duration-300 shadow-sm " + (attendanceSummary.absent > 0 ? "bg-gradient-to-br from-[#FDF0EC] to-white border-[#F5C4B5]" : "bg-white border-[#EDE8E0]")}>
+                  <span className={"font-instrument text-[11px] font-bold tracking-widest uppercase block mb-2 " + (attendanceSummary.absent > 0 ? "text-[#D4654A]" : "text-[#8C7D6B]")}>未到人數</span>
+                  <span className={"font-fraunces text-5xl block " + (attendanceSummary.absent > 0 ? "text-[#D4654A]" : "text-[#1A1209]")}>{attendanceSummary.absent}</span>
                 </div>
               </div>
 
-              {/* 缺席名單 */}
               <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-[20px] border border-[#EDE8E0] p-6 relative z-10 flex flex-col">
                 <h3 className="font-instrument text-[12px] font-bold tracking-widest uppercase text-[#8C7D6B] mb-5 flex items-center gap-1.5 border-b border-[#EDE8E0] pb-3">
                   <AlertCircle size={15} /> Absent List
@@ -342,13 +299,11 @@ export default function App() {
           </div>
         </div>
         
-        {/* 落款 Footer */}
         <footer className="mt-8 mb-2 text-center text-[#8C7D6B] font-instrument text-sm font-medium tracking-wide animate-fade-up" style={{ animationDelay: '300ms' }}>
           made by Terry L.
         </footer>
       </div>
 
-      {/* 設定 Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1209]/30 backdrop-blur-md">
           <div className="bg-[#FFFDF9] border border-[#EDE8E0] rounded-[24px] w-full max-w-xl max-h-[85vh] flex flex-col shadow-[0_24px_64px_-12px_rgba(26,18,9,0.2)] animate-fade-up" style={{ animationDelay: '0ms' }}>
@@ -374,10 +329,10 @@ export default function App() {
                 {students.map((student) => (
                   <div 
                     key={student.id} 
-                    className={`grid grid-cols-12 gap-3 items-center p-3 rounded-xl border transition-all ${
-                      student.isEmpty ? 'bg-black/5 border-transparent opacity-50' : 
-                      student.status !== '正常' ? 'bg-[#FDF0EC] border-[#F5C4B5] shadow-sm' : 'bg-white border-[#EDE8E0] hover:border-[#D9B8D3]'
-                    }`}
+                    className={"grid grid-cols-12 gap-3 items-center p-3 rounded-xl border transition-all " + (
+                      student.isEmpty ? "bg-black/5 border-transparent opacity-50" : 
+                      student.status !== "正常" ? "bg-[#FDF0EC] border-[#F5C4B5] shadow-sm" : "bg-white border-[#EDE8E0] hover:border-[#D9B8D3]"
+                    )}
                   >
                     <div className="col-span-3 text-center font-fraunces text-xl text-[#1A1209]">
                       {student.id.toString().padStart(2, '0')}
@@ -388,8 +343,38 @@ export default function App() {
                         value={student.status}
                         disabled={student.isEmpty}
                         onChange={(e) => handleStudentChange(student.id, 'status', e.target.value)}
-                        className={`w-full font-instrument text-sm rounded-lg border-[#EDE8E0] shadow-sm focus:border-[#D4654A] focus:ring-[#D4654A] disabled:opacity-50 transition-colors ${
-                          student.status !== '正常' && !student.isEmpty ? 'text-[#D4654A] font-bold bg-white' : 'text-[#4A3F30]'
-                        }`}
+                        className={"w-full font-instrument text-sm rounded-lg border-[#EDE8E0] shadow-sm focus:border-[#D4654A] focus:ring-[#D4654A] disabled:opacity-50 transition-colors " + (
+                          student.status !== "正常" && !student.isEmpty ? "text-[#D4654A] font-bold bg-white" : "text-[#4A3F30]"
+                        )}
                       >
-                        {LEAVE_T
+                        {LEAVE_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-3 flex justify-center items-center">
+                      <input
+                        type="checkbox"
+                        checked={student.isEmpty}
+                        onChange={(e) => handleStudentChange(student.id, 'isEmpty', e.target.checked)}
+                        className="w-5 h-5 rounded border-[#EDE8E0] text-[#D4654A] focus:ring-[#D4654A] cursor-pointer shadow-sm"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-[#EDE8E0] bg-white/50 flex justify-end">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="font-instrument text-[15px] font-medium text-white bg-[#1A1209] px-8 py-3 rounded-xl transition-all duration-300 hover:bg-[#4A8B6F] shadow-[0_4px_12px_rgba(26,18,9,0.15)] hover:shadow-[0_6px_16px_rgba(74,139,111,0.25)]"
+              >
+                儲存設定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
