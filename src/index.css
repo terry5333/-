@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Instrument+Sans:ital,wght@0,400..600;1,400..600&display=swap');
+
 /* 確保背景色填滿整個螢幕 */
 html, body, #root {
   min-height: 100vh;
@@ -9,3 +11,36 @@ html, body, #root {
   padding: 0;
   background-color: #FAF8F4;
 }
+
+.font-fraunces { 
+  font-family: 'Fraunces', serif; 
+}
+.font-instrument { 
+  font-family: 'Instrument Sans', sans-serif; 
+}
+
+.card-surface {
+  background: rgba(255, 253, 249, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(237, 232, 224, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(26, 18, 9, 0.03), inset 0 1px 0 rgba(255,255,255,1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-surface:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px -12px rgba(26, 18, 9, 0.08), inset 0 1px 0 rgba(255,255,255,1);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #EDE8E0; border-radius: 4px; }
